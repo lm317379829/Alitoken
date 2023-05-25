@@ -70,7 +70,6 @@ def refresh_token(token, delFile=False):
         "Rererer": "https://www.aliyundrive.com/",
         "Content-Type": "application/json"
     }
-    #刷新token并获取参数
     r = requests.post(url='https://auth.aliyundrive.com/v2/account/token',
                       json={'grant_type': 'refresh_token', 'refresh_token': token},
                       headers=header,
@@ -83,7 +82,6 @@ def refresh_token(token, delFile=False):
     user_id = jo['user_id']
     drive_id = jo['default_drive_id']
     header['authorization'] = authorization
-    #获取opentoken
     try:
         r = requests.post(
             url='https://open.aliyundrive.com/oauth/users/authorize?client_id=76917ccccd4441c39457a04f6084fb2f&redirect_uri=https://alist.nn.ci/tool/aliyundrive/callback&scope=user:base,file:all:read,file:all:write&state=',
@@ -105,7 +103,6 @@ def refresh_token(token, delFile=False):
     except:
         opentoken = ''
         opauthorization = ''
-    #签到&领取奖励
     r = requests.post(url='https://member.aliyundrive.com/v1/activity/sign_in_list',
                       json={"grant_type": "refresh_token", "refresh_token": token},
                       headers=header,
@@ -117,7 +114,6 @@ def refresh_token(token, delFile=False):
                               json={"grant_type": "refresh_token", "refresh_token": token, "signInDay": signInDay},
                               headers=header,
                               timeout=10)
-    #删除根目录文件
     if delFile:
         r = requests.post(url='https://api.aliyundrive.com/adrive/v3/file/list',
                           json={"drive_id": drive_id, "parent_file_id": "root"},
