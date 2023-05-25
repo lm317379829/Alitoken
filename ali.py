@@ -1,5 +1,6 @@
 import re
 import json
+import time
 import requests
 
 class Ali:
@@ -22,6 +23,7 @@ class Ali:
         user_id = jo['user_id']
         drive_id = jo['default_drive_id']
         header['authorization'] = authorization
+        export_in = jo['expires_in']
         # 获取opentoken
         try:
             r = requests.post(
@@ -39,6 +41,7 @@ class Ali:
                               },
                               headers=header)
             jo = json.loads(r.text)
+            openexport_in = jo['expires_in']
             opentoken = jo['refresh_token']
             opauthorization = '{} {}'.format(jo['token_type'], jo['access_token'])
         except:
@@ -78,4 +81,5 @@ class Ali:
         tokenDict['opauthorization'] = opauthorization
         tokenDict['user_id'] = user_id
         tokenDict['drive_id'] = drive_id
+        tokenDict['expires_at'] = int(time.time()) + min(export_in, openexport_in) - 60
         return tokenDict
