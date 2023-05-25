@@ -34,7 +34,7 @@ def token():
                 display = 'token'
             if display == 'all':
                 return json.dumps(tokenDict)
-            elif display not in ['all', 'token', 'authorization', 'user_id', 'drive_id', 'token_type', 'access_token', 'opentoken', 'opauthorization']:
+            elif display not in ['all', 'token', 'authorization', 'opentoken', 'opauthorization', 'user_id', 'drive_id']:
                 return json.dumps(tokenDict['token'])
             else:
                 return json.dumps(tokenDict[display])
@@ -82,8 +82,6 @@ def refresh_token(token, delFile=False):
     authorization = '{} {}'.format(jo['token_type'],  jo['access_token'])
     user_id = jo['user_id']
     drive_id = jo['default_drive_id']
-    token_type = jo['token_type']
-    access_token = jo['access_token']
     header['authorization'] = authorization
     #获取opentoken
     try:
@@ -139,12 +137,10 @@ def refresh_token(token, delFile=False):
                               timeout=10)
     tokenDict['token'] = token
     tokenDict['authorization'] = authorization
-    tokenDict['user_id'] = user_id
-    tokenDict['drive_id'] = drive_id
-    tokenDict['token_type'] = token_type
-    tokenDict['access_token'] = access_token
     tokenDict['opentoken'] = opentoken
     tokenDict['opauthorization'] = opauthorization
+    tokenDict['user_id'] = user_id
+    tokenDict['drive_id'] = drive_id
     return tokenDict
 
 if __name__ == '__main__':
