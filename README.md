@@ -18,7 +18,7 @@ post 访问 服务器ip或域名:8888/token?token=你的token&iv=你的初始化
  
  get 访问 服务器ip或域名:8888/token?iv=你的初始化向量&key=你的秘钥
  
- 可添加参数：display、delFile
+ 可添加参数：display、delFile、refresh
  
 | display参数  | 功能           |
 |--------------|---------------|
@@ -34,3 +34,8 @@ post 访问 服务器ip或域名:8888/token?token=你的token&iv=你的初始化
 |--------------|---------------|
 | True         | 删除根目录文件 |
 | False        |不删除根目录文件|
+
+| refresh参数  | 功能           |
+|--------------|---------------|
+| True         |    强制刷新    |
+| False        |   不强制刷新   |
