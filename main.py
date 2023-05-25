@@ -85,9 +85,9 @@ def token():
             if display == 'all':
                 return json.dumps(tokenDict)
             elif display not in ['all', 'token', 'authorization', 'opentoken', 'opauthorization', 'user_id', 'drive_id']:
-                return json.dumps(tokenDict['token'])
+                return tokenDict['token']
             else:
-                return json.dumps(tokenDict[display])
+                return tokenDict[display]
         else:
             token = request.args.get('token')
             content_str = cryption().encrypt(iv, key, token)
