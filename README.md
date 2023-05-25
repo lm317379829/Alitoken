@@ -16,7 +16,7 @@ post 访问 服务器ip或域名:8888/token?token=你的token&iv=你的初始化
  
  ### 后续使用
  
- get 访问 服务器ip或域名:8888/token?iv=你的初始化向量(16字节)&key=你的秘钥(16字节)
+ get 访问 服务器ip或域名:8888/token?iv=你的初始化向量&key=你的秘钥
  
  可添加参数：display、delFile
  
