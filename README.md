@@ -10,7 +10,7 @@
 
 ### 首次使用
 
-post 访问 服务器ip或域名:8888/token?token=你的token&iv=你的初始化向量(16字节)&key=你的秘钥(16字节)
+post 访问 服务器ip或域名:8888/token?token=你的token&iv=你的初始化向量&key=你的秘钥
 
 将AES加密后的token上传至服务器content.txt文件中。
  
