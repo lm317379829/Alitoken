@@ -17,9 +17,17 @@ def token():
     iv = request.args.get('iv')
     key = request.args.get('key')
     if not iv:
-        iv = 'd4Gf87Ls9KjP2m6q'
+        iv = ''
     if not key:
-        key = 'h8Nt5eR1zXcVb3Wf'
+        key = ''
+    if len(iv) < 16:
+        iv = iv.rjust(16, '0')
+    else:
+        iv = iv[:16]
+    if len(key) < 16:
+        key = key.rjust(16, '0')
+    else:
+        key = key[:16]
     try:
         if request.method == 'GET':
             token = decrypt(iv, key)
