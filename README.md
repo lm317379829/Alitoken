@@ -6,17 +6,9 @@
 
 ### 自行部署到replit等平台，或利用docker部署。token经过AES加密，iv与key自行保存，防止token泄露。
 
-访问服务器ip或域名:8888为默认网页。
+访问服务器ip或域名:8888为默认404网页。
 
-### 首次使用
-
-post 访问 服务器ip或域名:8888/token?token=你的token&iv=你的初始化向量&key=你的秘钥
-
-将AES加密后的token上传至服务器content.txt文件中。
- 
- ### 后续使用
- 
- get 访问 服务器ip或域名:8888/token?iv=你的初始化向量&key=你的秘钥
+访问 服务器ip或域名:8888/token?iv=你的初始化向量&key=你的秘钥
  
  可添加参数：display、delFile、refresh
  
