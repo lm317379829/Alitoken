@@ -72,8 +72,7 @@ def token():
                         continue
                     tokenDict[tkey] = cryption().decrypt(iv, key, enc_tokenDict[tkey])
         else:
-            with open('content.txt', 'r') as file:
-                content = file.read()
+            content = requests.get('http://127.0.0.1:8888/cache', params={'key': 'content'}).text
             if content == '':
                 return redirect('/submit')
             tokenDict = Ali().refresh_token(cryption().decrypt(iv, key, content), delFile)
@@ -117,8 +116,10 @@ def process():
         key = key[:16]
     token = request.form.get('token')
     content_str = cryption().encrypt(iv, key, token)
-    with open('content.txt', "w") as file:
-        file.write(content_str)
+
+    value = content_str.encode()
+    requests.post('http://127.0.0.1:8888/cache', params={'key': 'content'}, data=value, headers={'Content-Length': str(len(value))})
+
     domain = request.host_url[:-1]
     message = '请牢记你的iv与key。'
     show_token = '加密后token为：{}'.format(content_str)
