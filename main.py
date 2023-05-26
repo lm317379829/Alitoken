@@ -25,6 +25,10 @@ class cryption():
         return content_str
 
 app = Flask(__name__)
+
+app.config['content'] = ''
+app.config['alicache'] = {}
+
 @app.route('/')
 def web():
     return render_template('index.html')
@@ -61,9 +65,8 @@ def token():
             refresh = True
         else:
             refresh = False
-        alicache = requests.get('http://127.0.0.1:8888/cache', params={'key': 'alicache'}).text
-        if alicache != '' and not refresh:
-            enc_tokenDict = json.loads(alicache)
+        if app.config['alicache'] != {} and not refresh:
+            enc_tokenDict = app.config['alicache']
             if enc_tokenDict['expires_at'] > int(time.time()):
                 tokenDict = {}
                 for tkey in enc_tokenDict:
@@ -72,10 +75,9 @@ def token():
                         continue
                     tokenDict[tkey] = cryption().decrypt(iv, key, enc_tokenDict[tkey])
         else:
-            content = requests.get('http://127.0.0.1:8888/cache', params={'key': 'content'}).text
-            if content == '':
+            if app.config['content'] == '':
                 return redirect('/submit')
-            tokenDict = Ali().refresh_token(cryption().decrypt(iv, key, content), delFile)
+            tokenDict = Ali().refresh_token(cryption().decrypt(iv, key, app.config['content']), delFile)
             if tokenDict == {}:
                 return redirect('/submit')
             enc_tokenDict = {}
@@ -84,8 +86,7 @@ def token():
                     enc_tokenDict[tkey] = tokenDict[tkey]
                     continue
                 enc_tokenDict[tkey] = cryption().encrypt(iv, key, tokenDict[tkey])
-            value = json.dumps(enc_tokenDict).encode()
-            requests.post('http://127.0.0.1:8888/cache', params={'key': 'alicache'}, data=value, headers={'Content-Length': str(len(value))})
+            app.config['alicache'] = enc_tokenDict.copy()
         display = request.args.get('display')
         if not display:
             display = 'token'
@@ -117,8 +118,7 @@ def process():
     token = request.form.get('token')
     content_str = cryption().encrypt(iv, key, token)
 
-    value = content_str.encode()
-    requests.post('http://127.0.0.1:8888/cache', params={'key': 'content'}, data=value, headers={'Content-Length': str(len(value))})
+    app.config['content'] = content_str
 
     domain = request.host_url[:-1]
     message = '请牢记你的iv与key。'
@@ -129,28 +129,9 @@ def process():
     del_file = '{}/token?iv={}&key={}&delFile=True'.format(domain, request.form.get('iv'), request.form.get('key'))
     return render_template('result.html', message=message, show_token=show_token, get_token=get_token, get_all=get_all, force_refresh=force_refresh, del_file=del_file)
 
-
 @app.route('/submit')
 def submit():
     return render_template('cryption.html')
-
-data = {}
-@app.route('/cache', methods=['POST', 'PUT', 'GET', 'DELETE'])
-def cache():
-    methods = request.method
-    key = request.args.get('key')
-    if methods in ['POST', 'PUT']:
-        body = request.data
-        data[key] = body
-        return body
-    elif methods == 'GET':
-        if key in data:
-            return data[key]
-        else:
-            return ''
-    else:
-        data[key] = ''
-        return ''
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", threaded=True, port=8888)
