@@ -75,7 +75,7 @@ def token():
                     Ali().delFile(tokenDict)
             # 缓存app.config['alicache']过期
             else:
-                tokenDict = Ali().refresh_token(app.config['content'], delFile)
+                tokenDict = Ali().refresh_token(cryption().decrypt(iv, key, app.config['content']), delFile)
                 if tokenDict == {}:
                     return redirect('/submit')
                 app.config['alicache'] = tokenDict.copy()
