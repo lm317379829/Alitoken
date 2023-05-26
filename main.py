@@ -2,7 +2,6 @@ import os
 import json
 import time
 import base64
-import requests
 
 from flask import Flask, redirect, request, render_template, send_from_directory
 from aes import AES
@@ -39,7 +38,7 @@ def favicon():
 
 @app.route('/token')
 def token():
-    tokenDict = {}
+    # 获取相关参数
     iv = request.args.get('iv')
     key = request.args.get('key')
     if not iv:
@@ -57,36 +56,41 @@ def token():
     try:
         refresh = request.args.get('refresh')
         delFile = request.args.get('delFile')
-        if delFile:
+        if delFile and delFile.lower() == 'true':
             delFile = True
         else:
             delFile = False
-        if refresh:
+        if refresh and refresh.lower() == 'true':
             refresh = True
         else:
             refresh = False
+        # 缓存app.config['alicache']非空且不强制刷新
         if app.config['alicache'] != {} and not refresh:
-            enc_tokenDict = app.config['alicache']
-            if enc_tokenDict['expires_at'] > int(time.time()):
-                tokenDict = {}
-                for tkey in enc_tokenDict:
-                    if tkey == 'expires_at':
-                        tokenDict[tkey] = enc_tokenDict[tkey]
-                        continue
-                    tokenDict[tkey] = cryption().decrypt(iv, key, enc_tokenDict[tkey])
+            # 缓存app.config['alicache']未过期
+            if app.config['alicache']['expires_at'] > int(time.time()):
+                tokenDict = app.config['alicache'].copy()
+                Ali().check_in(tokenDict)
+                # 删除文件delFile为True则
+                if delFile:
+                    Ali().delFile(tokenDict)
+            # 缓存app.config['alicache']过期
+            else:
+                tokenDict = Ali().refresh_token(app.config['content'], delFile)
+                if tokenDict == {}:
+                    return redirect('/submit')
+                app.config['alicache'] = tokenDict.copy()
+        # 缓存app.config['alicache']为空
         else:
+            # 缓存app.config['content']为空
             if app.config['content'] == '':
                 return redirect('/submit')
+
             tokenDict = Ali().refresh_token(cryption().decrypt(iv, key, app.config['content']), delFile)
+            # tokenDict为{}，意味着token失效，重新提交token
             if tokenDict == {}:
                 return redirect('/submit')
-            enc_tokenDict = {}
-            for tkey in tokenDict:
-                if tkey == 'expires_at':
-                    enc_tokenDict[tkey] = tokenDict[tkey]
-                    continue
-                enc_tokenDict[tkey] = cryption().encrypt(iv, key, tokenDict[tkey])
-            app.config['alicache'] = enc_tokenDict.copy()
+            app.config['alicache'] = tokenDict.copy()
+
         display = request.args.get('display')
         if not display:
             display = 'token'
@@ -117,9 +121,7 @@ def process():
         key = key[:16]
     token = request.form.get('token')
     content_str = cryption().encrypt(iv, key, token)
-
     app.config['content'] = content_str
-
     domain = request.host_url[:-1]
     message = '请牢记你的iv与key。'
     show_token = '加密后token为：{}'.format(content_str)

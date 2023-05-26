@@ -5,11 +5,26 @@
     <title>加密Token</title>
 </head>
 <body>
-    <form method="POST" action="/process">
+    <script>
+        // 获取当前URL地址
+        var url = window.location.href;
+        // 截取地址部分
+        var address = url.substring(0, url.indexOf("/", 8)) + '/process';
+    </script>
+
+    <form method="POST" action="" id="myForm">
         <input type="text" name="iv">请输入iv<br>
         <input type="text" name="key">请输入key<br>
         <input type="text" name="token">请输入token<br>
         <input type="submit" value="提交">
     </form>
+
+    <script>
+        // 将地址存储到变量并设置为表单的action属性
+        var form = document.getElementById("myForm");
+        form.action=address;
+
+        console.log(form.action);
+    </script>
 </body>
 </html>
