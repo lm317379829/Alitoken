@@ -79,6 +79,7 @@ def token():
                 if tokenDict == {}:
                     return redirect('/submit')
                 app.config['alicache'] = tokenDict.copy()
+                app.config['content'] = cryption().encrypt(iv, key, tokenDict['token'])
         # 缓存app.config['alicache']为空
         else:
             # 缓存app.config['content']为空
@@ -90,6 +91,7 @@ def token():
             if tokenDict == {}:
                 return redirect('/submit')
             app.config['alicache'] = tokenDict.copy()
+            app.config['content'] = cryption().encrypt(iv, key, tokenDict['token'])
 
         display = request.args.get('display')
         if not display:
