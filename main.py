@@ -25,7 +25,8 @@ class cryption():
 
 app = Flask(__name__)
 
-app.config['content'] = ''
+with open('content.txt', 'r') as file:
+    app.config['content'] = file.read()
 app.config['alicache'] = {}
 
 @app.route('/')
@@ -80,6 +81,9 @@ def token():
                     return redirect('/submit')
                 app.config['alicache'] = tokenDict.copy()
                 app.config['content'] = cryption().encrypt(iv, key, tokenDict['token'])
+                if os.access('content.txt', os.W_OK):
+                    with open('content.txt', "w") as file:
+                        file.write(app.config['content'])
         # 缓存app.config['alicache']为空
         else:
             # 缓存app.config['content']为空
@@ -92,6 +96,9 @@ def token():
                 return redirect('/submit')
             app.config['alicache'] = tokenDict.copy()
             app.config['content'] = cryption().encrypt(iv, key, tokenDict['token'])
+            if os.access('content.txt', os.W_OK):
+                with open('content.txt', "w") as file:
+                    file.write(app.config['content'])
 
         display = request.args.get('display')
         if not display:
@@ -124,6 +131,9 @@ def process():
     token = request.form.get('token')
     content_str = cryption().encrypt(iv, key, token)
     app.config['content'] = content_str
+    if os.access('content.txt', os.W_OK):
+        with open('content.txt', "w") as file:
+            file.write(app.config['content'])
     domain = request.host_url[:-1]
     message = '请牢记你的iv与key。'
     show_token = '加密后token为：{}'.format(content_str)
