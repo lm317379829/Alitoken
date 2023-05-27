@@ -69,7 +69,12 @@ def token():
         if app.config['alicache'] != {} and not refresh:
             # 缓存app.config['alicache']未过期
             if app.config['alicache']['expires_at'] > int(time.time()):
-                tokenDict = app.config['alicache'].copy()
+                tokenDict ={}
+                for tkey in app.config['alicache']:
+                    if tkey == 'expires_at':
+                        tokenDict[tkey] = app.config['alicache'][tkey]
+                        continue
+                    tokenDict[tkey] = cryption().decrypt(iv, key, app.config['alicache'][tkey])
                 Ali().check_in(tokenDict)
                 # 删除文件delFile为True则
                 if delFile:
@@ -79,7 +84,11 @@ def token():
                 tokenDict = Ali().refresh_token(cryption().decrypt(iv, key, app.config['content']), delFile)
                 if tokenDict == {}:
                     return redirect('/submit')
-                app.config['alicache'] = tokenDict.copy()
+                for tkey in tokenDict:
+                    if tkey == 'expires_at':
+                        app.config['alicache'][tkey] = tokenDict[tkey]
+                        continue
+                    app.config['alicache'][tkey] = cryption().encrypt(iv, key, tokenDict[tkey])
                 app.config['content'] = cryption().encrypt(iv, key, tokenDict['token'])
                 if os.access('content.txt', os.W_OK):
                     with open('content.txt', "w") as file:
@@ -94,7 +103,11 @@ def token():
             # tokenDict为{}，意味着token失效，重新提交token
             if tokenDict == {}:
                 return redirect('/submit')
-            app.config['alicache'] = tokenDict.copy()
+            for tkey in tokenDict:
+                if tkey == 'expires_at':
+                    app.config['alicache'][tkey] = tokenDict[tkey]
+                    continue
+                app.config['alicache'][tkey] = cryption().encrypt(iv, key, tokenDict[tkey])
             app.config['content'] = cryption().encrypt(iv, key, tokenDict['token'])
             if os.access('content.txt', os.W_OK):
                 with open('content.txt', "w") as file:
