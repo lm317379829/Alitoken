@@ -13,7 +13,11 @@ class cryption():
         key_bit = key.encode()
         cipher = AES(key_bit)
         content_bit = base64.b64decode(content)
-        return cipher.decrypt_cbc(content_bit, iv_bit).decode()
+        try:
+            content = cipher.decrypt_cbc(content_bit, iv_bit).decode()
+        except:
+            content = 'Erro'
+        return content
 
     def encrypt(self, iv, key, content):
         iv_bit = iv.encode()
@@ -74,14 +78,20 @@ def token():
                     if tkey == 'expires_at':
                         tokenDict[tkey] = app.config['alicache'][tkey]
                         continue
-                    tokenDict[tkey] = cryption().decrypt(iv, key, app.config['alicache'][tkey])
+                    value = cryption().decrypt(iv, key, app.config['alicache'][tkey])
+                    if value == 'Erro':
+                        return '密钥错误，请重新输入'
+                    tokenDict[tkey] = value
                 Ali().check_in(tokenDict)
                 # 删除文件delFile为True则
                 if delFile:
                     Ali().delFile(tokenDict)
             # 缓存app.config['alicache']过期
             else:
-                tokenDict = Ali().refresh_token(cryption().decrypt(iv, key, app.config['content']), delFile)
+                value = cryption().decrypt(iv, key, app.config['content'])
+                if value == 'Erro':
+                    return '密钥错误'
+                tokenDict = Ali().refresh_token(value, delFile)
                 if tokenDict == {}:
                     return redirect('/submit')
                 for tkey in tokenDict:
@@ -99,7 +109,11 @@ def token():
             if app.config['content'] == '':
                 return redirect('/submit')
 
-            tokenDict = Ali().refresh_token(cryption().decrypt(iv, key, app.config['content']), delFile)
+            value = cryption().decrypt(iv, key, app.config['content'])
+            if value == 'Erro':
+                return '密钥错误'
+
+            tokenDict = Ali().refresh_token(value, delFile)
             # tokenDict为{}，意味着token失效，重新提交token
             if tokenDict == {}:
                 return redirect('/submit')
