@@ -122,7 +122,7 @@ def token():
                     app.config['alicache'][tkey] = tokenDict[tkey]
                     continue
                 app.config['alicache'][tkey] = cryption().encrypt(iv, key, tokenDict[tkey])
-            app.config['content'] = cryption().encrypt(iv, key, tokenDict['token'])
+            app.config['content'] = app.config['alicache']['token']
             if os.access('content.txt', os.W_OK):
                 with open('content.txt', "w") as file:
                     file.write(app.config['content'])

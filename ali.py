@@ -62,6 +62,7 @@ class Ali:
             opentoken = jo['refresh_token']
             opauthorization = '{} {}'.format(jo['token_type'], jo['access_token'])
         except:
+            openexport_in = 7200
             opentoken = ''
             opauthorization = ''
         tokenDict['opentoken'] = opentoken
