@@ -59,7 +59,6 @@ with open('content.txt', 'r') as file:
     app.config['content'] = json.loads(file.read())
 app.config['alicache'] = {}
 
-
 @app.route('/')
 def web():
     return render_template('index.html')

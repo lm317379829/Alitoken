@@ -75,41 +75,48 @@ class Ali:
 
     # 签到、领奖
     def check_in(self, params):
-        tokenDict = params.copy()
-        header = headers.copy()
-        header['authorization'] = tokenDict['authorization']
-        r = requests.post(url='https://member.aliyundrive.com/v1/activity/sign_in_list',
-                          json={"grant_type": "refresh_token", "refresh_token": tokenDict['token']},
-                          headers=header,
-                          timeout=10)
-        for day in r.json()['result']['signInLogs']:
-            if day['isReward'] is False and day['status'] == 'normal':
-                signInDay = day['day']
-                requests.post(url='https://member.aliyundrive.com/v1/activity/sign_in_reward',
-                              json={"grant_type": "refresh_token", "refresh_token": tokenDict['token'], "signInDay": signInDay},
+        try:
+            tokenDict = params.copy()
+            header = headers.copy()
+            header['authorization'] = tokenDict['authorization']
+            r = requests.post(url='https://member.aliyundrive.com/v1/activity/sign_in_list',
+                              json={"grant_type": "refresh_token", "refresh_token": tokenDict['token']},
                               headers=header,
                               timeout=10)
+            for day in r.json()['result']['signInLogs']:
+                if day['isReward'] is False and day['status'] == 'normal':
+                    signInDay = day['day']
+                    requests.post(url='https://member.aliyundrive.com/v1/activity/sign_in_reward',
+                                  json={"grant_type": "refresh_token", "refresh_token": tokenDict['token'],
+                                        "signInDay": signInDay},
+                                  headers=header,
+                                  timeout=10)
+        except:
+            pass
         return
 
     # 删除根目录文件
     def delFile(self, params):
-        tokenDict = params.copy()
-        header = headers.copy()
-        header['authorization'] = tokenDict['authorization']
-        r = requests.post(url='https://api.aliyundrive.com/adrive/v3/file/list',
-                          json={"drive_id": tokenDict['drive_id'], "parent_file_id": "root"},
-                          headers=header,
-                          timeout=10)
-        for item in r.json()['items']:
-            if item['type'] == 'file':
-                requests.post('https://api.aliyundrive.com/v3/batch',
-                              json={"requests":
-                                        [{"body": {"drive_id": tokenDict['drive_id'], "file_id": item['file_id']},
-                                          "headers": {"Content-Type": "application/json"},
-                                          "id": item['file_id'],
-                                          "method": "POST",
-                                          "url": "/file/delete"}],
-                                    "resource": "file"},
+        try:
+            tokenDict = params.copy()
+            header = headers.copy()
+            header['authorization'] = tokenDict['authorization']
+            r = requests.post(url='https://api.aliyundrive.com/adrive/v3/file/list',
+                              json={"drive_id": tokenDict['drive_id'], "parent_file_id": "root"},
                               headers=header,
                               timeout=10)
+            for item in r.json()['items']:
+                if item['type'] == 'file':
+                    requests.post('https://api.aliyundrive.com/v3/batch',
+                                  json={"requests":
+                                            [{"body": {"drive_id": tokenDict['drive_id'], "file_id": item['file_id']},
+                                              "headers": {"Content-Type": "application/json"},
+                                              "id": item['file_id'],
+                                              "method": "POST",
+                                              "url": "/file/delete"}],
+                                        "resource": "file"},
+                                  headers=header,
+                                  timeout=10)
+        except:
+            pass
         return
