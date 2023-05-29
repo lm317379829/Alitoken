@@ -15,12 +15,15 @@ class Ali:
         params = {}
         header = headers.copy()
         try:
-            r = requests.post(url='https://auth.aliyundrive.com/v2/account/token',
-                              json={'grant_type': 'refresh_token', 'refresh_token': token},
-                              headers=header,
-                              timeout=10)
-            if r.status_code != 200:
-                return {}
+            retry = 1
+            while retry <= 3:
+                retry += 1
+                r = requests.post(url='https://auth.aliyundrive.com/v2/account/token',
+                                  json={'grant_type': 'refresh_token', 'refresh_token': token},
+                                  headers=header,
+                                  timeout=10)
+                if r.status_code == 200:
+                    break
             jo = json.loads(r.text)
             params['token'] = jo['refresh_token']
             params['authorization'] = '{} {}'.format(jo['token_type'], jo['access_token'])

@@ -9,6 +9,7 @@ from flask import Flask, redirect, request, render_template, send_from_directory
 from aes import AES
 from ali import Ali
 
+
 class cryption():
     def decrypt(self, iv, key, content):
         iv_bit = iv.encode()
@@ -21,6 +22,7 @@ class cryption():
             content = 'Erro'
         return content
 
+
     def encrypt(self, iv, key, content):
         iv_bit = iv.encode()
         key_bit = key.encode()
@@ -28,6 +30,7 @@ class cryption():
         content_bit = cipher.encrypt_cbc(content.encode(), iv_bit)
         content_str = base64.b64encode(content_bit).decode()
         return content_str
+
 
     def refresh(self, iv, key, rtime, delFile=False):
         while True:
@@ -50,21 +53,22 @@ class cryption():
                         file.write(json.dumps(app.config['content']))
             time.sleep(stime)
 
-app = Flask(__name__)
 
+app = Flask(__name__)
 with open('content.txt', 'r') as file:
     app.config['content'] = json.loads(file.read())
 app.config['alicache'] = {}
-
 
 
 @app.route('/')
 def web():
     return render_template('index.html')
 
+
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'templates'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
 
 @app.route('/token')
 def token():
@@ -83,18 +87,18 @@ def token():
         key = key.rjust(16, '0')
     else:
         key = key[:16]
+    refresh = request.args.get('refresh')
+    delFile = request.args.get('delFile')
+    display = request.args.get('display')
+    if delFile and delFile.lower() == 'true':
+        delFile = True
+    else:
+        delFile = False
+    if refresh and refresh.lower() == 'true':
+        refresh = True
+    else:
+        refresh = False
     try:
-        refresh = request.args.get('refresh')
-        delFile = request.args.get('delFile')
-        if delFile and delFile.lower() == 'true':
-            delFile = True
-        else:
-            delFile = False
-        if refresh and refresh.lower() == 'true':
-            refresh = True
-        else:
-            refresh = False
-
         # 检测定时刷新线程是否在运行
         for t in threading.enumerate():
             if t.name == "refresh":
@@ -139,7 +143,7 @@ def token():
                 if os.access('content.txt', os.W_OK):
                     with open('content.txt', "w") as file:
                         file.write(json.dumps(app.config['content']))
-        # 缓存app.config['alicache']为空
+        # 缓存app.config['alicache']为空或强制刷新
         else:
             # 缓存app.config['content']为空
             if app.config['content'] == {}:
@@ -163,7 +167,6 @@ def token():
                 with open('content.txt', "w") as file:
                     file.write(json.dumps(app.config['content']))
 
-        display = request.args.get('display')
         if not display:
             display = 'token'
         if display == 'all':
@@ -174,6 +177,7 @@ def token():
             return tokenDict[display]
     except:
         return redirect('/submit')
+
 
 @app.route('/process', methods=['POST'])
 def process():
@@ -220,9 +224,11 @@ def process():
         pass
     return render_template('result.html', message=message, show_token=show_token, get_token=get_token, get_all=get_all, force_refresh=force_refresh, del_file=del_file)
 
+
 @app.route('/submit')
 def submit():
     return render_template('cryption.html')
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", threaded=True, port=8888)
