@@ -33,29 +33,33 @@ class cryption():
 
 
     def refresh(self, iv, key, rtime, delFile=False):
-        if 'stime' in rtime:
-            stime = int(rtime['stime'])
-        else:
-            stime = 7200
-        if stime < 3600:
-            stime = 7200
-        if 'btime' in rtime:
-            btime = int(rtime['btime'])
-        else:
-            btime = int(time.time())
-        if int(time.time()) > stime + btime:
-            requests.get('http://127.0.0.1:8888/token?iv={}&key={}&delFile={}'.format(iv, key, delFile))
-            rtime['btime'] = int(time.time())
-            app.config['content'].update(rtime)
-            if os.access('content.txt', os.W_OK):
-                with open('content.txt', "w") as file:
-                    file.write(json.dumps(app.config['content']))
-        time.sleep(stime)
-            
+        while True:
+            if 'stime' in rtime:
+                stime = int(rtime['stime'])
+            else:
+                stime = 7200
+            if stime < 3600:
+                stime = 7200
+            if 'btime' in rtime:
+                btime = int(rtime['btime'])
+            else:
+                btime = int(time.time())
+            if int(time.time()) > stime + btime:
+                requests.get('http://127.0.0.1:8888/token?iv={}&key={}&delFile={}'.format(iv, key, delFile))
+                rtime['btime'] = int(time.time())
+                app.config['content'].update(rtime)
+                if os.access('content.txt', os.W_OK):
+                    with open('content.txt', "w") as file:
+                        file.write(json.dumps(app.config['content']))
+            time.sleep(stime)
+
 
 app = Flask(__name__)
 with open('content.txt', 'r') as file:
-    app.config['content'] = json.loads(file.read())
+    content = file.read()
+    if content == '':
+        content = {}
+    app.config['content'] = json.loads(content)
 app.config['alicache'] = {}
 
 @app.route('/')
@@ -98,15 +102,14 @@ def token():
         refresh = False
     try:
         # 检测定时刷新线程是否在运行
+        tList = []
         for t in threading.enumerate():
-            if t.name == "refresh":
-                break
-            else:
-                try:
-                    threading.Thread(target=cryption().refresh, args=(iv, key, app.config['content'], delFile), name="refresh").start()
-                except:
-                    pass
-
+            tList.append(t.name)
+        if "refresh" in tList:
+            try:
+                threading.Thread(target=cryption().refresh, args=(iv, key, app.config['content'], delFile), name="refresh").start()
+            except:
+                pass
         # 缓存app.config['alicache']非空且不强制刷新
         if app.config['alicache'] != {} and not refresh:
             # 缓存app.config['alicache']未过期
