@@ -33,26 +33,25 @@ class cryption():
 
 
     def refresh(self, iv, key, rtime, delFile=False):
-        while True:
-            if 'stime' in rtime:
-                stime = int(rtime['stime'])
-            else:
-                stime = 7200
-            if stime < 3600:
-                stime = 7200
-            if 'btime' in rtime:
-                btime = int(rtime['btime'])
-            else:
-                btime = int(time.time())
-            if int(time.time()) > stime + btime:
-                requests.get('http://127.0.0.1:8888/token?iv={}&key={}&delFile={}'.format(iv, key, delFile))
-                rtime['btime'] = int(time.time())
-                app.config['content'].update(rtime)
-                if os.access('content.txt', os.W_OK):
-                    with open('content.txt', "w") as file:
-                        file.write(json.dumps(app.config['content']))
-            time.sleep(stime)
-
+        if 'stime' in rtime:
+            stime = int(rtime['stime'])
+        else:
+            stime = 7200
+        if stime < 3600:
+            stime = 7200
+        if 'btime' in rtime:
+            btime = int(rtime['btime'])
+        else:
+            btime = int(time.time())
+        if int(time.time()) > stime + btime:
+            requests.get('http://127.0.0.1:8888/token?iv={}&key={}&delFile={}'.format(iv, key, delFile))
+            rtime['btime'] = int(time.time())
+            app.config['content'].update(rtime)
+            if os.access('content.txt', os.W_OK):
+                with open('content.txt', "w") as file:
+                    file.write(json.dumps(app.config['content']))
+        time.sleep(stime)
+            
 
 app = Flask(__name__)
 with open('content.txt', 'r') as file:
