@@ -1,8 +1,11 @@
 import re
 import json
 import time
+import ecdsa
+import random
+import hashlib
 import requests
-
+from base64 import b64decode
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.54 Safari/537.36",
     "Rererer": "https://www.aliyundrive.com/",
@@ -29,8 +32,9 @@ class Ali:
             params['authorization'] = '{} {}'.format(jo['token_type'], jo['access_token'])
             params['user_id'] = jo['user_id']
             params['drive_id'] = jo['default_drive_id']
+            params['device_id'] = jo['device_id']
             params['export_in'] = jo['expires_in']
-            tokenDict = self.refresh_opentoken(params)
+            tokenDict = self.get_signature(self.refresh_opentoken(params))
             if 'export_in' in tokenDict:
                 del tokenDict['export_in']
             self.check_in(params)
@@ -46,7 +50,7 @@ class Ali:
         header = headers.copy()
         header['authorization'] = tokenDict['authorization']
         try:
-            url = base64.b64decode('aHR0cHM6Ly9vcGVuLmFsaXl1bmRyaXZlLmNvbS9vYXV0aC91c2Vycy9hdXRob3JpemU/Y2xpZW50X2lkPTc2OTE3Y2NjY2Q0NDQxYzM5NDU3YTA0ZjYwODRmYjJmJnJlZGlyZWN0X3VyaT1odHRwczovL2FsaXN0Lm5uLmNpL3Rvb2wvYWxpeXVuZHJpdmUvY2FsbGJhY2smc2NvcGU9dXNlcjpiYXNlLGZpbGU6YWxsOnJlYWQsZmlsZTphbGw6d3JpdGUmc3RhdGU9').decode()
+            url = b64decode('aHR0cHM6Ly9vcGVuLmFsaXl1bmRyaXZlLmNvbS9vYXV0aC91c2Vycy9hdXRob3JpemU/Y2xpZW50X2lkPTc2OTE3Y2NjY2Q0NDQxYzM5NDU3YTA0ZjYwODRmYjJmJnJlZGlyZWN0X3VyaT1odHRwczovL2FsaXN0Lm5uLmNpL3Rvb2wvYWxpeXVuZHJpdmUvY2FsbGJhY2smc2NvcGU9dXNlcjpiYXNlLGZpbGU6YWxsOnJlYWQsZmlsZTphbGw6d3JpdGUmc3RhdGU9').decode()
             r = requests.post(url=url,
                               json={
                                   'authorize': 1,
@@ -54,7 +58,7 @@ class Ali:
                               },
                               headers=header)
             code = re.search(r'code=(.*?)\"', r.text).group(1)
-            r = requests.post(url='https://api.nn.ci/alist/ali_open/code',
+            r = requests.post(url='https://api-cf.nn.ci/alist/ali_open/code',
                               json={
                                   'code': code,
                                   'grant_type': 'authorization_code'
@@ -72,6 +76,23 @@ class Ali:
         tokenDict['opauthorization'] = opauthorization
         tokenDict['expires_at'] = int(int(time.time()) + min(tokenDict['export_in'], openexport_in)/2)
         return tokenDict
+
+    # 获取 signature
+    def get_signature(self, params):
+        tokenDict = params.copy()
+        header = headers.copy()
+        nonce = 0
+        app_id = '5dde4e1bdf9e4966b387ba58f4b3fdc3'
+        private_key = random.randint(1, 2 ** 256 - 1)
+        ecc_pri = ecdsa.SigningKey.from_secret_exponent(private_key, curve=ecdsa.SECP256k1)
+        ecc_pub = ecc_pri.get_verifying_key()
+        public_key = "04" + ecc_pub.to_string().hex()
+        sign_dat = ecc_pri.sign(':'.join([app_id, tokenDict['device_id'], tokenDict['user_id'], str(nonce)]).encode('utf-8'), entropy=None, hashfunc=hashlib.sha256)
+        signature = sign_dat.hex() + "01"
+        tokenDict['public_key'] = public_key
+        tokenDict['signature'] = signature
+        return tokenDict
+
 
     # 签到、领奖
     def check_in(self, params):
