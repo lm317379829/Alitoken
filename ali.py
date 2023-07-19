@@ -46,13 +46,13 @@ class Ali:
         header = headers.copy()
         header['authorization'] = tokenDict['authorization']
         try:
-            r = requests.post(
-                url='https://open.aliyundrive.com/oauth/users/authorize?client_id=76917ccccd4441c39457a04f6084fb2f&redirect_uri=https://alist.nn.ci/tool/aliyundrive/callback&scope=user:base,file:all:read,file:all:write&state=',
-                json={
-                    'authorize': 1,
-                    'scope': 'user:base,file:all:read,file:all:write'
-                },
-                headers=header)
+            url = base64.b64decode('aHR0cHM6Ly9vcGVuLmFsaXl1bmRyaXZlLmNvbS9vYXV0aC91c2Vycy9hdXRob3JpemU/Y2xpZW50X2lkPTc2OTE3Y2NjY2Q0NDQxYzM5NDU3YTA0ZjYwODRmYjJmJnJlZGlyZWN0X3VyaT1odHRwczovL2FsaXN0Lm5uLmNpL3Rvb2wvYWxpeXVuZHJpdmUvY2FsbGJhY2smc2NvcGU9dXNlcjpiYXNlLGZpbGU6YWxsOnJlYWQsZmlsZTphbGw6d3JpdGUmc3RhdGU9').decode()
+            r = requests.post(url=url,
+                              json={
+                                  'authorize': 1,
+                                  'scope': 'user:base,file:all:read,file:all:write'
+                              },
+                              headers=header)
             code = re.search(r'code=(.*?)\"', r.text).group(1)
             r = requests.post(url='https://api.nn.ci/alist/ali_open/code',
                               json={

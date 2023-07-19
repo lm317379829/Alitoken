@@ -32,7 +32,7 @@ class cryption():
         return content_str
 
 
-    def refresh(self, iv, key, rtime, delFile=False):
+    def refresh(self, iv, key, rtime):
         while True:
             if 'stime' in rtime:
                 stime = int(rtime['stime'])
@@ -44,6 +44,10 @@ class cryption():
                 btime = int(rtime['btime'])
             else:
                 btime = int(time.time())
+            if 'delFile' in rtime:
+                delFile = bool(rtime['delFile'])
+            else:
+                delFile = False
             if int(time.time()) > stime + btime:
                 requests.get('http://127.0.0.1:8888/token?iv={}&key={}&delFile={}'.format(iv, key, delFile))
                 rtime['btime'] = int(time.time())
@@ -58,7 +62,7 @@ app = Flask(__name__)
 with open('content.txt', 'r') as file:
     content = file.read()
     if content == '':
-        content = {}
+        content = '{}'
     app.config['content'] = json.loads(content)
 app.config['alicache'] = {}
 
@@ -107,7 +111,7 @@ def token():
             tList.append(t.name)
         if "refresh" in tList:
             try:
-                threading.Thread(target=cryption().refresh, args=(iv, key, app.config['content'], delFile), name="refresh").start()
+                threading.Thread(target=cryption().refresh, args=(iv, key, app.config['content']), name="refresh").start()
             except:
                 pass
         # 缓存app.config['alicache']非空且不强制刷新
@@ -209,6 +213,7 @@ def process():
     app.config['content']['token'] = content_str
     app.config['content']['stime'] = stime
     app.config['content']['btime'] = int(time.time())
+    app.config['content']['delFile'] = delFile
     if os.access('content.txt', os.W_OK):
         with open('content.txt', "w") as file:
             file.write(json.dumps(app.config['content']))
