@@ -4,7 +4,7 @@
 
 ## 使用方法：
 
-### 自行部署到replit等平台，或利用docker部署。token经过AES加密，iv与key自行保存，防止token泄露。
+### 自行部署到replit等平台，或利用docker部署。token经过AES加密，防止token泄露，iv与key自行保存。
 
 访问服务器ip或域名:8888为默认404网页。
 
