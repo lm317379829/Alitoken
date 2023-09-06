@@ -14,13 +14,13 @@
  
 | display参数  | 功能           |
 |--------------|---------------|
-| all          | 全部          |
-| token        | 32位token     |
-| authorization| 旧api授权    |
-| opentoken    | 280位token    |
-| opauthorization|新api授权   |
-| user_id      | user_id       |
-| drive_id     | drive_id      |
+| all          | 显示全部          |
+| token        | 显示32位token     |
+| authorization| 显示旧api授权    |
+| opentoken    | 显示280位token    |
+| opauthorization|显示新api授权   |
+| user_id      | 显示user_id       |
+| drive_id     | 显示drive_id      |
  
 | delFile参数  | 功能           |
 |--------------|---------------|
