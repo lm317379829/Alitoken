@@ -122,15 +122,20 @@ class Ali:
             tokenDict = params.copy()
             header = headers.copy()
             header['authorization'] = tokenDict['authorization']
+            try:
+                r = requests.post('https://user.aliyundrive.com/v2/user/get', headers=header)
+                drive_id = r.json()['resource_drive_id']
+            except:
+                drive_id = tokenDict['drive_id']
             r = requests.post(url='https://api.aliyundrive.com/adrive/v3/file/list',
-                              json={"drive_id": tokenDict['drive_id'], "parent_file_id": "root"},
+                              json={"drive_id": drive_id, "parent_file_id": "root"},
                               headers=header,
                               timeout=10)
             for item in r.json()['items']:
                 if item['type'] == 'file':
                     requests.post('https://api.aliyundrive.com/v3/batch',
                                   json={"requests":
-                                            [{"body": {"drive_id": tokenDict['drive_id'], "file_id": item['file_id']},
+                                            [{"body": {"drive_id": drive_id, "file_id": item['file_id']},
                                               "headers": {"Content-Type": "application/json"},
                                               "id": item['file_id'],
                                               "method": "POST",
