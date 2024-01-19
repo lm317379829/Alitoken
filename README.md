@@ -2,6 +2,8 @@
 
 利用Python的Flask库搭建的阿里token相关服务。
 
+![image](https://dartnode.com/assets/dash/images/brand/favicon.png)
+
 可以搭建于： https://dartnode.com/
 
 ## 使用方法：
